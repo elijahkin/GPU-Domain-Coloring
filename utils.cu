@@ -1,4 +1,3 @@
-#include <ctime>
 #include <nvfunctional>
 #include <png.h>
 #include <thrust/complex.h>
@@ -6,7 +5,11 @@
 typedef thrust::complex<double> Complex;
 typedef nvstd::function<Complex(Complex)> Function;
 
-void save_png(uint8_t *rgb, int width, int height, char *filename) {
+void save_png(uint8_t *rgb, int width, int height, char *name) {
+  // Create filename
+  char filename[100];
+  sprintf(filename, "renders/%s.png", name);
+
   FILE *fp = fopen(filename, "wb");
   png_structp png =
       png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);

@@ -1,6 +1,18 @@
 #include "utils.cu"
 
-__global__ void domain_color_kernel(Function f, int N, int width, double min_re,
+__device__ Complex identity(Complex z) {
+  return z;
+}
+
+__device__ Complex roots_of_unity(Complex z) {
+  return pow(z, 3) - 1;
+}
+
+__device__ Complex essential_singularity(Complex z) {
+  return exp(1.0 / z);
+}
+
+__global__ void domain_color_kernel(int N, int width, double min_re,
                                     double max_im, double step_size,
                                     uint8_t *rgb) {
   int offset = blockIdx.x * blockDim.x + threadIdx.x;
@@ -15,14 +27,14 @@ __global__ void domain_color_kernel(Function f, int N, int width, double min_re,
     Complex z(min_re + col * step_size, max_im - row * step_size);
 
     // Apply the function
-    Complex w = f(z);
+    Complex w = essential_singularity(z);
 
     // Convert result to rgb and write to memory
     complex_to_rgb(w, rgb, n);
   }
 }
 
-void domain_color(Function f, Complex center, double apothem_real, int width,
+void domain_color(Complex center, double apothem_real, int width,
                   int height) {
   // Allocate memory for storing pixels
   uint8_t *rgb;
@@ -35,18 +47,14 @@ void domain_color(Function f, Complex center, double apothem_real, int width,
   double step_size = 2.0 * apothem_real / (width - 1);
 
   // These blocks and thread numbers were chosen for my RTX 3060
-  domain_color_kernel<<<28, 128>>>(f, N, width, min_real, max_imag, step_size,
+  domain_color_kernel<<<28, 128>>>(N, width, min_real, max_imag, step_size,
                                    rgb);
 
-  char filename[100];
-  sprintf(filename, "renders/domain_color_%s.png", "happy");
-  save_png(rgb, width, height, filename);
+  // Save the image to a file
+  save_png(rgb, width, height, "domain_color_essential_singularity");
 }
 
 int main() {
-  auto identity = [] __device__(Complex z) -> Complex {
-    return z;
-  };
-  domain_color(identity, 0, 2, 1024, 1024);
+  domain_color(0, 2, 1024, 1024);
   return 0;
 }
