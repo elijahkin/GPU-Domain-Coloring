@@ -1,16 +1,19 @@
 #include <nvfunctional>
 #include <png.h>
+#include <string>
 #include <thrust/complex.h>
 
 typedef thrust::complex<double> Complex;
 typedef nvstd::function<Complex(Complex)> Function;
 
-void save_png(uint8_t *rgb, int width, int height, char *name) {
+void save_png(uint8_t *rgb, int width, int height, std::string name) {
   // Create filename
-  char filename[100];
-  sprintf(filename, "renders/%s.png", name);
+  name = "renders/" + name + ".png";
 
-  FILE *fp = fopen(filename, "wb");
+  // Open the file
+  FILE *fp = fopen(name.c_str(), "wb");
+
+  // Write to the file
   png_structp png =
       png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
   png_infop info = png_create_info_struct(png);

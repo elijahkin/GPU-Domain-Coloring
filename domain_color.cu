@@ -1,18 +1,12 @@
 #include "utils.cu"
 
-__device__ Complex identity(Complex z) {
-  return z;
-}
+__device__ Complex identity(Complex z) { return z; }
 
-__device__ Complex roots_of_unity(Complex z) {
-  return pow(z, 3) - 1;
-}
+__device__ Complex roots_of_unity(Complex z) { return pow(z, 3) - 1; }
 
-__device__ Complex essential_singularity(Complex z) {
-  return exp(1.0 / z);
-}
+__device__ Complex essential_singularity(Complex z) { return exp(1.0 / z); }
 
-__global__ void domain_color_kernel(int N, int width, double min_re,
+__global__ void domain_color_kernel(Function f, int N, int width, double min_re,
                                     double max_im, double step_size,
                                     uint8_t *rgb) {
   int offset = blockIdx.x * blockDim.x + threadIdx.x;
@@ -34,8 +28,8 @@ __global__ void domain_color_kernel(int N, int width, double min_re,
   }
 }
 
-void domain_color(Complex center, double apothem_real, int width,
-                  int height) {
+void domain_color(Function f, Complex center, double apothem_real, int width,
+                  int height, std::string name) {
   // Allocate memory for storing pixels
   uint8_t *rgb;
   cudaMallocManaged(&rgb, width * height * 3 * sizeof(uint8_t));
@@ -47,14 +41,19 @@ void domain_color(Complex center, double apothem_real, int width,
   double step_size = 2.0 * apothem_real / (width - 1);
 
   // These blocks and thread numbers were chosen for my RTX 3060
-  domain_color_kernel<<<28, 128>>>(N, width, min_real, max_imag, step_size,
+  domain_color_kernel<<<28, 128>>>(f, N, width, min_real, max_imag, step_size,
                                    rgb);
 
+  // Wait for all threads to finish
+  cudaDeviceSynchronize();
+
   // Save the image to a file
-  save_png(rgb, width, height, "domain_color_essential_singularity");
+  name = "domain_color_" + name;
+  save_png(rgb, width, height, name);
 }
 
 int main() {
-  domain_color(0, 2, 1024, 1024);
+  domain_color(essential_singularity, 0, 1, 2048, 2048,
+               "essential_singularity");
   return 0;
 }
