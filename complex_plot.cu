@@ -15,8 +15,8 @@ int main() {
   domain_color("branch_cut", branch_cut, 0, 2, 2048, 2048);
 
   auto removable_singularity = [] __device__(Complex z) { return sin(z) / z; };
-  domain_color("removable_singularity", removable_singularity, 0, M_PI, 2048,
-               2048);
+  domain_color("removable_singularity", removable_singularity, 0, 2 * M_PI,
+               2048, 2048);
 
   auto triple_pole = [] __device__(Complex z) { return 1 / pow(z, 3); };
   domain_color("triple_pole", triple_pole, 0, 2, 2048, 2048);
@@ -29,6 +29,9 @@ int main() {
 
   auto cluster_point = [] __device__(Complex z) { return 1 / tan(M_PI / z); };
   domain_color("cluster_point", cluster_point, 0, 1, 2048, 2048);
+
+  auto sin_recip = [] __device__(Complex z) { return sin(1 / z); };
+  domain_color("sin_recip", sin_recip, 0, 0.5, 2048, 2048);
 
   auto riemann_zeta = [] __device__(Complex z) {
     Complex w = 0;
@@ -59,38 +62,6 @@ int main() {
     return w;
   };
   domain_color("tetration", tetration, 0, 3, 2048, 2048);
-
-  auto carpet = [] __device__(Complex z) {
-    for (int n = 0; n < 32; n++) {
-      z = cos(z) / sin(pow(z, 4) - 1);
-    }
-    return z;
-  };
-  domain_color("carpet", carpet, 0, 2, 2048, 2048);
-
-  auto crevice = [] __device__(Complex z) {
-    for (int n = 0; n < 32; n++) {
-      z = sin(1 / z);
-    }
-    return z;
-  };
-  domain_color("crevice", crevice, 0, 1.07, 2048, 2048);
-
-  auto spikes = [] __device__(Complex z) {
-    for (int n = 0; n < 16; n++) {
-      z = sin(z) / pow(z, 2);
-    }
-    return z;
-  };
-  domain_color("iterated_spikes", spikes, 0, 0.15, 2048, 2048);
-
-  auto iterated_map = [] __device__(Complex z) {
-    for (int n = 0; n < 16; n++) {
-      z = z * sin(pow(z, 3));
-    }
-    return z;
-  };
-  domain_color("iterated_map", iterated_map, 0, 2, 2048, 2048);
 
   // https://en.wikipedia.org/wiki/Newton_fractal
   auto newton1 = [] __device__(Complex z) {
@@ -142,61 +113,125 @@ int main() {
   };
   domain_color("newton6", newton6, 0, 2, 2048, 2048);
 
-  auto up_and_coming = [] __device__(Complex z) {
-    for (int n = 0; n < 8; n++) {
-      z = z.imag() * log(z);
+  auto iterated_map1 = [] __device__(Complex z) {
+    for (int n = 0; n < 16; n++) {
+      z = z * sin(pow(z, 3));
     }
     return z;
   };
-  domain_color("up_and_coming", up_and_coming, 0, 2, 2048, 2048);
+  domain_color("iterated_map1", iterated_map1, 0, 2, 2048, 2048);
 
-  auto up_and_coming2 = [i] __device__(Complex z) {
+  auto iterated_map2 = [] __device__(Complex z) {
+    for (int n = 0; n < 16; n++) {
+      z = sin(z) / pow(z, 2);
+    }
+    return z;
+  };
+  domain_color("iterated_map2", iterated_map2, 0, 0.15, 2048, 2048);
+
+  auto iterated_map3 = [i] __device__(Complex z) {
     for (int n = 0; n < 8; n++) {
       z = z.real() * log(z) * exp(i * arg(z));
     }
     return z;
   };
-  domain_color("up_and_coming2", up_and_coming2, 0, 2, 2048, 2048);
+  domain_color("iterated_map3", iterated_map3, 0, 2, 2048, 2048);
 
-  auto up_and_coming3 = [i] __device__(Complex z) {
+  auto iterated_map4 = [i] __device__(Complex z) {
     for (int n = 0; n < 64; n++) {
       z = tanh(1 / z) * exp(i * abs(z));
     }
     return z;
   };
-  domain_color("up_and_coming3", up_and_coming3, 0, 2, 2048, 2048);
+  domain_color("iterated_map4", iterated_map4, 0, 2, 2048, 2048);
 
-  auto up_and_coming4 = [i] __device__(Complex z) {
+  auto iterated_map5 = [i] __device__(Complex z) {
     for (int n = 0; n < 64; n++) {
       z = z.real() * exp(i * z.imag());
     }
     return z;
   };
-  domain_color("up_and_coming4", up_and_coming4, 0, 2, 2048, 2048);
+  domain_color("iterated_map5", iterated_map5, 0, 2, 2048, 2048);
 
-  auto up_and_coming5 = [i] __device__(Complex z) {
-    for (int n = 0; n < 64; n++) {
-      z = z / abs(pow(z, 3) - 1);
-    }
-    return z * exp(i * arg(sin(pow(z, 3) - 1)));
-  };
-  domain_color("up_and_coming5", up_and_coming5, 0, 1.2, 2048, 2048);
-
-  auto up_and_coming6 = [] __device__(Complex z) {
+  auto iterated_map6 = [] __device__(Complex z) {
     for (int n = 0; n < 64; n++) {
       z = z / (pow(z, 3) - 1).real();
     }
     return z;
   };
-  domain_color("up_and_coming6", up_and_coming6, 0, 4, 2048, 2048);
+  domain_color("iterated_map6", iterated_map6, 0, 4, 2048, 2048);
 
-  auto up_and_coming7 = [i] __device__(Complex z) {
-    for (int n = 0; n < 64; n++) {
-      z = pow(z, sqrt(z * z + i));
+  auto iterated_map7 = [i] __device__(Complex z) {
+    for (int n = 0; n < 32; n++) {
+      z = log(i / pow(z, 2));
     }
     return z;
   };
-  domain_color("up_and_coming7", up_and_coming7, 0, 2, 2048, 2048);
+  domain_color("iterated_map7", iterated_map7, 0, 3, 4096, 4096);
+
+  auto iterated_map8 = [] __device__(Complex z) {
+    for (int n = 0; n < 32; n++) {
+      z = log(1 / pow(z, 2));
+    }
+    return z;
+  };
+  domain_color("iterated_map8", iterated_map8, 0, 3, 4096, 4096);
+
+  auto iterated_map9 = [] __device__(Complex z) {
+    for (int n = 0; n < 32; n++) {
+      z = log(1 / pow(z, 3));
+    }
+    return z;
+  };
+  domain_color("iterated_map9", iterated_map9, 0, 3, 4096, 4096);
+
+  auto iterated_map10 = [i] __device__(Complex z) {
+    for (int n = 0; n < 32; n++) {
+      z = log(z / (pow(z, 3) - i));
+    }
+    return z;
+  };
+  domain_color("iterated_map10", iterated_map10, 0, 3, 4096, 4096);
+
+  auto iterated_map11 = [] __device__(Complex z) {
+    for (int n = 0; n < 16; n++) {
+      z = log(pow(1 / z, z));
+    }
+    return z;
+  };
+  domain_color("iterated_map11", iterated_map11, 0, 2, 2048, 2048);
+
+  auto iterated_map12 = [i] __device__(Complex z) {
+    for (int n = 0; n < 8; n++) {
+      z = exp(i * z.imag()) * tan(1 / z);
+    }
+    return z;
+  };
+  domain_color("iterated_map12", iterated_map12, 0, 2, 2048, 2048);
+
+  auto iterated_map13 = [i] __device__(Complex z) {
+    for (int n = 0; n < 8; n++) {
+      z = exp(i * abs(z)) * exp(1 / z);
+    }
+    return z;
+  };
+  domain_color("iterated_map13", iterated_map13, 0, 2, 2048, 2048);
+
+  auto needle = [] __device__(Complex z) {
+    for (int n = 0; n < 8; n++) {
+      z = z.imag() * log(z);
+    }
+    return z;
+  };
+  domain_color("needle", needle, 0, 2, 2048, 2048);
+
+  auto tron = [i] __device__(Complex z) {
+    for (int n = 0; n < 64; n++) {
+      z = z / abs(pow(z, 3) - 1);
+    }
+    return z * exp(i * arg(sin(pow(z, 3) - 1)));
+  };
+  domain_color("tron", tron, 0, 1.2, 2048, 2048);
 
   auto grace22 = [] __device__(Complex z) {
     Complex w = z;
@@ -207,15 +242,21 @@ int main() {
   };
   domain_color("grace22", grace22, M_PI_2 * i, 0.4, 2048, 2048);
 
-  auto purple_and_green_slime = [i] __device__(Complex z) {
+  auto pollock = [i] __device__(Complex z) {
     for (int n = 0; n < 32; n++) {
-      z = log((pow(z, 6) - i * pow(z, 6) + 7 * z + i * z) /
-              (2 * pow(z, 5) + 6));
+      z = log(((1 - i) * pow(z, 6) + (7 + i) * z) / (2 * pow(z, 5) + 6));
     }
     return z;
   };
-  domain_color("purple_and_green_slime", purple_and_green_slime, 0, 2, 2048,
-               2048);
+  domain_color("pollock", pollock, 0, 2, 2048, 2048);
+
+  auto i_of_storm = [i] __device__(Complex z) {
+    for (int n = 0; n < 32; n++) {
+      z = log(((1 - i) * pow(z, 4) + (7 + i) * z) / (2 * pow(z, 5) + 6));
+    }
+    return z;
+  };
+  domain_color("i_of_storm", i_of_storm, 0, 2, 2048, 2048);
 
   auto pink_and_green_slime = [i] __device__(Complex z) {
     for (int n = 0; n < 32; n++) {
@@ -227,12 +268,100 @@ int main() {
                2048);
 
   auto kaleidoscope = [] __device__(Complex z) {
-    for (int n = 0; n < 32; n++) {
+    for (int n = 0; n < 16; n++) {
       z = cos(1 / z);
     }
     return log(z);
   };
   domain_color("kaleidoscope", kaleidoscope, 0, 2, 2048, 2048);
+
+  auto strawberry_banana = [i] __device__(Complex z) {
+    for (int n = 0; n < 32; n++) {
+      z = log((z + i) / pow(z, 2));
+    }
+    return z;
+  };
+  domain_color("strawberry_banana", strawberry_banana, 0, 3, 4096, 4096);
+
+  auto triangle_dragon = [i] __device__(Complex z) {
+    for (int n = 0; n < 32; n++) {
+      z = log(((1 - i) * pow(z, 6) - 4 * i * pow(z, 3)) / (2 * pow(z, 6)));
+    }
+    return z;
+  };
+  domain_color("triangle_dragon", triangle_dragon, -0.3 * i, 3, 4096, 4096);
+
+  auto nightshade = [i] __device__(Complex z) {
+    for (int n = 0; n < 16; n++) {
+      z = exp(z * z + i);
+    }
+    return z;
+  };
+  domain_color("nightshade", nightshade, 0, 3, 2048, 2048);
+
+  auto glitch = [] __device__(Complex z) {
+    for (int n = 0; n < 64; n++) {
+      z = exp(1 / log(z));
+    }
+    return z;
+  };
+  domain_color("glitch", glitch, 0, 2, 2048, 2048);
+
+  auto acid_pitchfork = [i] __device__(Complex z) {
+    for (int n = 0; n < 8; n++) {
+      z = exp(i * arg(z)) * tanh(1 / pow(sinh(1 / z), 2));
+    }
+    return z;
+  };
+  domain_color("acid_pitchfork", acid_pitchfork, 0, 2, 2048, 2048);
+
+  auto carpet = [] __device__(Complex z) {
+    for (int n = 0; n < 16; n++) {
+      z = cos(z) / sin(pow(z, 4) - 1);
+    }
+    return z;
+  };
+  domain_color("carpet", carpet, 0, 2, 2048, 2048);
+
+  auto crevice = [] __device__(Complex z) {
+    for (int n = 0; n < 32; n++) {
+      z = sin(1 / z);
+    }
+    return z;
+  };
+  domain_color("crevice", crevice, 0, 1.07, 2048, 2048);
+
+  auto pastel_oology = [i] __device__(Complex z) {
+    for (int n = 0; n < 8; n++) {
+      z = exp(i * abs(z)) * log(z);
+    }
+    return z;
+  };
+  domain_color("pastel_oology", pastel_oology, 0, 2, 2048, 2048);
+
+  auto something_in_my_skin = [i] __device__(Complex z) {
+    for (int n = 0; n < 8; n++) {
+      z = exp(i * arg(z * z)) * (z * z - i);
+    }
+    return z;
+  };
+  domain_color("something_in_my_skin", something_in_my_skin, 0, 2, 2048, 2048);
+
+  auto ex_nihilo = [i] __device__(Complex z) {
+    for (int n = 0; n < 8; n++) {
+      z = exp(i * (z * z).imag()) * (z * z + i);
+    }
+    return z;
+  };
+  domain_color("ex_nihilo", ex_nihilo, 0, 2, 2048, 2048);
+
+  auto under_construction = [] __device__(Complex z) {
+    for (int n = 0; n < 32; n++) {
+      z = sin(1 / z);
+    }
+    return log(z);
+  };
+  domain_color("under_construction", under_construction, 0, 2, 2048, 2048);
 
   return 0;
 }
