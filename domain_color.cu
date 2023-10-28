@@ -1,12 +1,7 @@
 #include "utils.cu"
 
-__device__ Complex identity(Complex z) { return z; }
-
-__device__ Complex roots_of_unity(Complex z) { return pow(z, 3) - 1; }
-
-__device__ Complex essential_singularity(Complex z) { return exp(1.0 / z); }
-
-__global__ void domain_color_kernel(Function f, int N, int width, double min_re,
+template <typename F>
+__global__ void domain_color_kernel(F f, int N, int width, double min_re,
                                     double max_im, double step_size,
                                     uint8_t *rgb) {
   int offset = blockIdx.x * blockDim.x + threadIdx.x;
@@ -21,14 +16,15 @@ __global__ void domain_color_kernel(Function f, int N, int width, double min_re,
     Complex z(min_re + col * step_size, max_im - row * step_size);
 
     // Apply the function
-    Complex w = essential_singularity(z);
+    Complex w = f(z);
 
-    // Convert result to rgb and write to memory
-    complex_to_rgb(w, rgb, n);
+    // Convert the value to rgb and store it in memory
+    domain_color_pixel(w, rgb, n);
   }
 }
 
-void domain_color(Function f, Complex center, double apothem_real, int width,
+template <typename F>
+void domain_color(F f, Complex center, double apothem_real, int width,
                   int height, std::string name) {
   // Allocate memory for storing pixels
   uint8_t *rgb;
@@ -53,7 +49,13 @@ void domain_color(Function f, Complex center, double apothem_real, int width,
 }
 
 int main() {
-  domain_color(essential_singularity, 0, 1, 2048, 2048,
-               "essential_singularity");
+  domain_color([] __device__(Complex z) { return z; }, 0, 2, 2048, 2048,
+               "identity");
+
+  domain_color([] __device__(Complex z) { return pow(z, 3) - 1; }, 0, 2, 2048,
+               2048, "roots_of_unity");
+
+  domain_color([] __device__(Complex z) { return exp(1.0 / z); }, 0, 1, 2048,
+               2048, "essential_singularity");
   return 0;
 }

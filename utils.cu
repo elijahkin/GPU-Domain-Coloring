@@ -32,7 +32,7 @@ void save_png(uint8_t *rgb, int width, int height, std::string name) {
   fclose(fp);
 }
 
-__device__ void complex_to_rgb(Complex z, uint8_t *rgb, int n) {
+__device__ void domain_color_pixel(Complex z, uint8_t *rgb, int n) {
   // Compute the HSL values
   double h = 0.5 * (atan2(z.imag(), z.real()) / M_PI + 1);
   double s = 1.0;
