@@ -24,8 +24,8 @@ __global__ void domain_color_kernel(F f, int N, int width, double min_re,
 }
 
 template <typename F>
-void domain_color(F f, Complex center, double apothem_real, int width,
-                  int height, std::string name) {
+void domain_color(std::string name, F f, Complex center, double apothem_real,
+                  int width, int height) {
   // Allocate memory for storing pixels
   uint8_t *rgb;
   cudaMallocManaged(&rgb, width * height * 3 * sizeof(uint8_t));
@@ -46,4 +46,5 @@ void domain_color(F f, Complex center, double apothem_real, int width,
   // Save the image to a file
   name = "domain_color_" + name;
   save_png(rgb, width, height, name);
+  cudaFree(rgb);
 }

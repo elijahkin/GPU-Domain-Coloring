@@ -1,10 +1,8 @@
-#include <nvfunctional>
 #include <png.h>
 #include <string>
 #include <thrust/complex.h>
 
 typedef thrust::complex<double> Complex;
-typedef nvstd::function<Complex(Complex)> Function;
 
 void save_png(uint8_t *rgb, int width, int height, std::string name) {
   // Create filename
