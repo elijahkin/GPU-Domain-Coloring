@@ -47,15 +47,3 @@ void domain_color(F f, Complex center, double apothem_real, int width,
   name = "domain_color_" + name;
   save_png(rgb, width, height, name);
 }
-
-int main() {
-  domain_color([] __device__(Complex z) { return z; }, 0, 2, 2048, 2048,
-               "identity");
-
-  domain_color([] __device__(Complex z) { return pow(z, 3) - 1; }, 0, 2, 2048,
-               2048, "roots_of_unity");
-
-  domain_color([] __device__(Complex z) { return exp(1.0 / z); }, 0, 1, 2048,
-               2048, "essential_singularity");
-  return 0;
-}

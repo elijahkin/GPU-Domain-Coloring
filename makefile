@@ -1,10 +1,10 @@
 CC = nvcc
 CFLAGS = -lpng --extended-lambda
 
-all: domain_color
+all: complex_plot
 
-domain_color: domain_color.cu
-	$(CC) $(CFLAGS) -o bin/domain_color domain_color.cu
+complex_plot: complex_plot.cu
+	$(CC) $(CFLAGS) -o bin/complex_plot complex_plot.cu
 
 clean:
-	rm -f bin/domain_color
+	rm -f bin/complex_plot
