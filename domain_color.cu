@@ -1,4 +1,7 @@
+#ifndef utils
+#define utils
 #include "utils.cu"
+#endif
 
 template <typename F>
 __global__ void domain_color_kernel(F f, int N, int width, double min_re,

@@ -1,3 +1,4 @@
+#include "conformal_map.cu"
 #include "domain_color.cu"
 
 int main() {
@@ -5,6 +6,29 @@ int main() {
 
   auto identity = [] __device__(Complex z) { return z; };
   domain_color("identity", identity, 0, 1, 2048, 2048);
+  conformal_map("identity", identity, 0, 1, 2048, 2048,
+                "patterns/checkerboard.png");
+
+  auto shear = [i] __device__(Complex z) { return 3 * z * exp(i * M_PI_4); };
+  conformal_map("shear", shear, 0, 1, 2048, 2048, "patterns/checkerboard.png");
+
+  auto inverse = [] __device__(Complex z) { return 1 / z; };
+  conformal_map("blossom_inverse", inverse, 0, M_PI / 8, 2048, 2048,
+                "patterns/blossom.png");
+  conformal_map("longeli_inverse", inverse, 0, 1, 2048, 2048,
+                "patterns/longeli.png");
+  conformal_map("cleo_inverse", inverse, 0, 1.1, 2048, 2048,
+                "patterns/cleo.png");
+
+  auto double_pole = [] __device__(Complex z) { return pow(z, -2); };
+  conformal_map("double_pole", double_pole, 0, 1, 2048, 2048,
+                "patterns/cannon.png");
+  conformal_map("clock_double_pole", double_pole, 0, 2, 3200, 2400,
+                "patterns/clock.png");
+
+  auto two_cosh = [] __device__(Complex z) { return 2 * cosh(z); };
+  conformal_map("two_cosh", two_cosh, 0, M_PI, 2048, 2048,
+                "patterns/sirby.png");
 
   auto roots_of_unity = [] __device__(Complex z) { return pow(z, 3) - 1; };
   domain_color("roots_of_unity", roots_of_unity, 0, 2, 2048, 2048);
@@ -32,6 +56,32 @@ int main() {
 
   auto sin_recip = [] __device__(Complex z) { return sin(1 / z); };
   domain_color("sin_recip", sin_recip, 0, 0.5, 2048, 2048);
+  conformal_map("sin_recip", sin_recip, 0, 1, 2048, 2048,
+                "patterns/checkerboard.png");
+
+  auto spherify = [] __device__(Complex z) { return z * abs(z); };
+  conformal_map("spherify", spherify, 0, 8, 2048, 2048,
+                "patterns/checkerboard.png");
+
+  auto whirlpool = [i] __device__(Complex z) {
+    return 3 * z * exp(i * abs(z));
+  };
+  conformal_map("whirlpool", whirlpool, 0, 2, 2048, 2048,
+                "patterns/checkerboard.png");
+
+  auto knot = [] __device__(Complex z) { return 1 / sinh(z); };
+  conformal_map("knot", knot, 0, 0.6, 2048, 2048, "patterns/checkerboard.png");
+
+  auto multibrot = [] __device__(Complex z) {
+    for (int n = 0; n < 16; n++) {
+      z = pow(z, 7) + z;
+    }
+    return z;
+  };
+  conformal_map("multibrot_flower", multibrot, 0, 1.4, 2048, 2048,
+                "patterns/flower.png");
+  conformal_map("multibrot", multibrot, 0, 1.5, 2048, 2048,
+                "patterns/checkerboard.png");
 
   auto riemann_zeta = [] __device__(Complex z) {
     Complex w = 0;
@@ -167,7 +217,7 @@ int main() {
     }
     return z;
   };
-  domain_color("iterated_map7", iterated_map7, 0, 3, 4096, 4096);
+  domain_color("iterated_map7", iterated_map7, 0, 3, 2048, 2048);
 
   auto iterated_map8 = [] __device__(Complex z) {
     for (int n = 0; n < 32; n++) {
@@ -175,7 +225,7 @@ int main() {
     }
     return z;
   };
-  domain_color("iterated_map8", iterated_map8, 0, 3, 4096, 4096);
+  domain_color("iterated_map8", iterated_map8, 0, 3, 2048, 2048);
 
   auto iterated_map9 = [] __device__(Complex z) {
     for (int n = 0; n < 32; n++) {
@@ -183,7 +233,7 @@ int main() {
     }
     return z;
   };
-  domain_color("iterated_map9", iterated_map9, 0, 3, 4096, 4096);
+  domain_color("iterated_map9", iterated_map9, 0, 3, 2048, 2048);
 
   auto iterated_map10 = [i] __device__(Complex z) {
     for (int n = 0; n < 32; n++) {
@@ -191,7 +241,7 @@ int main() {
     }
     return z;
   };
-  domain_color("iterated_map10", iterated_map10, 0, 3, 4096, 4096);
+  domain_color("iterated_map10", iterated_map10, 0, 3, 2048, 2048);
 
   auto iterated_map11 = [] __device__(Complex z) {
     for (int n = 0; n < 16; n++) {
@@ -281,7 +331,7 @@ int main() {
     }
     return z;
   };
-  domain_color("strawberry_banana", strawberry_banana, 0, 3, 4096, 4096);
+  domain_color("strawberry_banana", strawberry_banana, 0, 3, 2048, 2048);
 
   auto triangle_dragon = [i] __device__(Complex z) {
     for (int n = 0; n < 32; n++) {
@@ -289,7 +339,7 @@ int main() {
     }
     return z;
   };
-  domain_color("triangle_dragon", triangle_dragon, -0.3 * i, 3, 4096, 4096);
+  domain_color("triangle_dragon", triangle_dragon, -0.3 * i, 3, 2048, 2048);
 
   auto nightshade = [i] __device__(Complex z) {
     for (int n = 0; n < 16; n++) {
