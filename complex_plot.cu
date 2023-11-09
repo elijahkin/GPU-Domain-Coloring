@@ -7,7 +7,7 @@ int main() {
   auto identity = [] __device__(Complex z) { return z; };
   domain_color("identity", identity, 0, 1, 2048, 2048);
   conformal_map("identity", identity, 0, 1, 2048, 2048,
-                "patterns/checkerboard.png");
+                "patterns/sirby.png");
 
   auto shear = [i] __device__(Complex z) { return 3 * z * exp(i * M_PI_4); };
   conformal_map("shear", shear, 0, 1, 2048, 2048, "patterns/checkerboard.png");

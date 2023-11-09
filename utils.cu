@@ -4,30 +4,15 @@
 
 typedef thrust::complex<double> Complex;
 
-void save_png(uint8_t *rgb, int width, int height, std::string name) {
-  // Create filename
-  name = "renders/" + name + ".png";
+void save_ppm(std::string name, uint8_t *rgb, int width, int height) {
+  name = "renders/" + name + ".ppm";
 
-  // Open the file
-  FILE *fp = fopen(name.c_str(), "wb");
-
-  // Write to the file
-  png_structp png =
-      png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-  png_infop info = png_create_info_struct(png);
-  png_init_io(png, fp);
-  png_set_IHDR(png, info, width, height, 8, PNG_COLOR_TYPE_RGB,
-               PNG_INTERLACE_NONE, PNG_COMPRESSION_TYPE_DEFAULT,
-               PNG_FILTER_TYPE_DEFAULT);
-  png_write_info(png, info);
-  png_bytep row_pointers[height];
-  for (int i = 0; i < height; i++) {
-    row_pointers[i] = &rgb[i * width * 3];
+  FILE *file = fopen(name.c_str(), "wb");
+  if (file) {
+    fprintf(file, "P6 %d %d 255\n", width, height);
+    fwrite(rgb, 1, 3 * width * height, file);
+    fclose(file);
   }
-  png_write_image(png, row_pointers);
-  png_write_end(png, NULL);
-  png_destroy_write_struct(&png, &info);
-  fclose(fp);
 }
 
 __device__ void domain_color_pixel(Complex z, uint8_t *rgb, int n) {

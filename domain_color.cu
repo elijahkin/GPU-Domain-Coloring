@@ -48,6 +48,6 @@ void domain_color(std::string name, F f, Complex center, double apothem_real,
 
   // Save the image to a file
   name = "domain_color_" + name;
-  save_png(rgb, width, height, name);
+  save_ppm(name, rgb, width, height);
   cudaFree(rgb);
 }

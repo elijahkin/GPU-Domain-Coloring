@@ -74,11 +74,11 @@ __device__ void conformal_map_pixel(Complex z, uint8_t *rgb, int n,
   // Map to pixel coordinates in the input image
   int img_col = floor(re * pattern.width);
   int img_row = floor(im * pattern.height);
-
+  
   // Wrap around the indices which are out of bounds
   img_col = positive_mod(img_col, pattern.width);
   img_row = positive_mod(img_row, pattern.height);
-
+  
   // Find the corresponding pixel in the input image
   int m = img_row * pattern.width + img_col;
 
@@ -143,5 +143,6 @@ void conformal_map(std::string name, F f, Complex center, double apothem_real,
 
   // Save the image to a file
   name = "conformal_map_" + name;
-  save_png(rgb, width, height, name);
+  save_ppm(name, rgb, width, height);
+  cudaFree(rgb);
 }
