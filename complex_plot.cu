@@ -6,29 +6,28 @@ int main() {
 
   auto identity = [] __device__(Complex z) { return z; };
   domain_color("identity", identity, 0, 1, 2048, 2048);
-  conformal_map("identity", identity, 0, 1, 2048, 2048,
-                "patterns/sirby.png");
+  conformal_map("identity", identity, 0, 1, 2048, 2048, "patterns/sirby.ppm");
 
   auto shear = [i] __device__(Complex z) { return 3 * z * exp(i * M_PI_4); };
-  conformal_map("shear", shear, 0, 1, 2048, 2048, "patterns/checkerboard.png");
+  conformal_map("shear", shear, 0, 1, 2048, 2048, "patterns/checkerboard.ppm");
 
   auto inverse = [] __device__(Complex z) { return 1 / z; };
   conformal_map("blossom_inverse", inverse, 0, M_PI / 8, 2048, 2048,
-                "patterns/blossom.png");
+                "patterns/blossom.ppm");
   conformal_map("longeli_inverse", inverse, 0, 1, 2048, 2048,
-                "patterns/longeli.png");
+                "patterns/longeli.ppm");
   conformal_map("cleo_inverse", inverse, 0, 1.1, 2048, 2048,
-                "patterns/cleo.png");
+                "patterns/cleo.ppm");
 
   auto double_pole = [] __device__(Complex z) { return pow(z, -2); };
   conformal_map("double_pole", double_pole, 0, 1, 2048, 2048,
-                "patterns/cannon.png");
+                "patterns/cannon.ppm");
   conformal_map("clock_double_pole", double_pole, 0, 2, 3200, 2400,
-                "patterns/clock.png");
+                "patterns/clock.ppm");
 
   auto two_cosh = [] __device__(Complex z) { return 2 * cosh(z); };
   conformal_map("two_cosh", two_cosh, 0, M_PI, 2048, 2048,
-                "patterns/sirby.png");
+                "patterns/sirby.ppm");
 
   auto roots_of_unity = [] __device__(Complex z) { return pow(z, 3) - 1; };
   domain_color("roots_of_unity", roots_of_unity, 0, 2, 2048, 2048);
@@ -57,20 +56,20 @@ int main() {
   auto sin_recip = [] __device__(Complex z) { return sin(1 / z); };
   domain_color("sin_recip", sin_recip, 0, 0.5, 2048, 2048);
   conformal_map("sin_recip", sin_recip, 0, 1, 2048, 2048,
-                "patterns/checkerboard.png");
+                "patterns/checkerboard.ppm");
 
   auto spherify = [] __device__(Complex z) { return z * abs(z); };
   conformal_map("spherify", spherify, 0, 8, 2048, 2048,
-                "patterns/checkerboard.png");
+                "patterns/checkerboard.ppm");
 
   auto whirlpool = [i] __device__(Complex z) {
     return 3 * z * exp(i * abs(z));
   };
   conformal_map("whirlpool", whirlpool, 0, 2, 2048, 2048,
-                "patterns/checkerboard.png");
+                "patterns/checkerboard.ppm");
 
   auto knot = [] __device__(Complex z) { return 1 / sinh(z); };
-  conformal_map("knot", knot, 0, 0.6, 2048, 2048, "patterns/checkerboard.png");
+  conformal_map("knot", knot, 0, 0.6, 2048, 2048, "patterns/checkerboard.ppm");
 
   auto multibrot = [] __device__(Complex z) {
     for (int n = 0; n < 16; n++) {
@@ -79,9 +78,9 @@ int main() {
     return z;
   };
   conformal_map("multibrot_flower", multibrot, 0, 1.4, 2048, 2048,
-                "patterns/flower.png");
+                "patterns/flower.ppm");
   conformal_map("multibrot", multibrot, 0, 1.5, 2048, 2048,
-                "patterns/checkerboard.png");
+                "patterns/checkerboard.ppm");
 
   auto riemann_zeta = [] __device__(Complex z) {
     Complex w = 0;
@@ -103,6 +102,8 @@ int main() {
     return w;
   };
   domain_color("lacunary", lacunary, 0, 1, 2048, 2048);
+  conformal_map("jake_lacunary", lacunary, 0, 1, 2048, 2048,
+                "patterns/jake.ppm");
 
   auto tetration = [] __device__(Complex z) {
     Complex w = z;
@@ -186,22 +187,6 @@ int main() {
     return z;
   };
   domain_color("iterated_map3", iterated_map3, 0, 2, 2048, 2048);
-
-  auto iterated_map4 = [i] __device__(Complex z) {
-    for (int n = 0; n < 64; n++) {
-      z = tanh(1 / z) * exp(i * abs(z));
-    }
-    return z;
-  };
-  domain_color("iterated_map4", iterated_map4, 0, 2, 2048, 2048);
-
-  auto iterated_map5 = [i] __device__(Complex z) {
-    for (int n = 0; n < 64; n++) {
-      z = z.real() * exp(i * z.imag());
-    }
-    return z;
-  };
-  domain_color("iterated_map5", iterated_map5, 0, 2, 2048, 2048);
 
   auto iterated_map6 = [] __device__(Complex z) {
     for (int n = 0; n < 64; n++) {
