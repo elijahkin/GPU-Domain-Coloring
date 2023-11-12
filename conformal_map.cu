@@ -5,12 +5,15 @@
 
 __device__ int positive_mod(int a, int b) { return (a % b + b) % b; }
 
-__device__ void conformal_map_pixel(Complex z, uint8_t *rgb, int n,
-                                    double min_re, double max_re, double min_im,
-                                    double max_im, Image pattern) {
+template <typename F>
+__device__ Color conformal_map_pixel(Complex z, F f, double min_re,
+                                     double max_re, double min_im,
+                                     double max_im, Image pattern) {
+  Complex w = f(z);
+
   // Normalize along both the real and imaginary directions
-  double re = ((z.real() - min_re) / (max_re - min_re));
-  double im = ((max_im - z.imag()) / (max_im - min_im));
+  double re = ((w.real() - min_re) / (max_re - min_re));
+  double im = ((max_im - w.imag()) / (max_im - min_im));
 
   // Map to pixel coordinates in the input image
   int img_col = floor(re * pattern.width);
@@ -24,9 +27,8 @@ __device__ void conformal_map_pixel(Complex z, uint8_t *rgb, int n,
   int m = img_row * pattern.width + img_col;
 
   // Write its RGB values to memory
-  rgb[3 * n + 0] = pattern.rgb[3 * m + 0];
-  rgb[3 * n + 1] = pattern.rgb[3 * m + 1];
-  rgb[3 * n + 2] = pattern.rgb[3 * m + 2];
+  return {pattern.rgb[3 * m + 0], pattern.rgb[3 * m + 1],
+          pattern.rgb[3 * m + 2]};
 }
 
 template <typename F>
@@ -45,11 +47,12 @@ __global__ void conformal_map_kernel(F f, Image render, double min_re,
     // Convert indices to complex number
     Complex z(min_re + col * step_size, max_im - row * step_size);
 
-    // Apply the function
-    Complex w = f(z);
-
-    conformal_map_pixel(w, render.rgb, n, min_re, max_re, min_im, max_im,
-                        pattern);
+    // Map z to a color and store it in memory
+    Color color =
+        conformal_map_pixel(z, f, min_re, max_re, min_im, max_im, pattern);
+    render.rgb[3 * n + 0] = color.r;
+    render.rgb[3 * n + 1] = color.g;
+    render.rgb[3 * n + 2] = color.b;
   }
 }
 

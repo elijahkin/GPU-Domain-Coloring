@@ -3,59 +3,20 @@
 #include "utils.cu"
 #endif
 
-__device__ void domain_color_pixel(Complex z, uint8_t *rgb, int n) {
+template <typename F>
+__device__ Color domain_color_pixel(Complex z, F f) {
+  // Apply the function
+  Complex w = f(z);
+
   // Compute the HSL values
-  double h = 0.5 * (arg(z) / M_PI + 1);
+  double h = 0.5 * (arg(w) / M_PI + 1);
   double s = 1.0;
-  double l = 2.0 * atan(abs(z)) / M_PI;
+  double l = 2.0 * atan(abs(w)) / M_PI; // 0.5;
 
-  // Convert HSL values to RGB values
-  double chroma = (1 - abs(2 * l - 1)) * s;
-  double x = chroma * (1 - abs(fmod(6 * h, 2.0) - 1));
-  double m = l - (chroma / 2.0);
+  // To fix issue with negative real numbers
+  h = fmodf(h, 1);
 
-  uint8_t sextant = int(h * 6);
-  double r, g, b;
-  switch (sextant) {
-  case 0:
-    r = chroma;
-    g = x;
-    b = 0;
-    break;
-  case 1:
-    r = x;
-    g = chroma;
-    b = 0;
-    break;
-  case 2:
-    r = 0;
-    g = chroma;
-    b = x;
-    break;
-  case 3:
-    r = 0;
-    g = x;
-    b = chroma;
-    break;
-  case 4:
-    r = x;
-    g = 0;
-    b = chroma;
-    break;
-  case 5:
-    r = chroma;
-    g = 0;
-    b = x;
-    break;
-  default:
-    r = g = b = 0;
-    break;
-  }
-
-  // Write RGB values to memory
-  rgb[3 * n + 0] = (uint8_t)((r + m) * 255);
-  rgb[3 * n + 1] = (uint8_t)((g + m) * 255);
-  rgb[3 * n + 2] = (uint8_t)((b + m) * 255);
+  return hsl_to_rgb(h, s, l);
 }
 
 template <typename F>
@@ -73,11 +34,11 @@ __global__ void domain_color_kernel(F f, int N, int width, double min_re,
     // Convert indices to complex number
     Complex z(min_re + col * step_size, max_im - row * step_size);
 
-    // Apply the function
-    Complex w = f(z);
-
-    // Convert the value to rgb and store it in memory
-    domain_color_pixel(w, rgb, n);
+    // Map z to a color and store it in memory
+    Color color = domain_color_pixel(z, f);
+    rgb[3 * n + 0] = color.r;
+    rgb[3 * n + 1] = color.g;
+    rgb[3 * n + 2] = color.b;
   }
 }
 

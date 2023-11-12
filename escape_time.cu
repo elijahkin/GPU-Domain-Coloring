@@ -3,10 +3,16 @@
 #include "utils.cu"
 #endif
 
+__device__ uint8_t lerp(uint8_t a, uint8_t b, double t) {
+  return static_cast<uint8_t>(a + t * (b - a));
+}
+
+__device__ Color color_lerp(Color x, Color y, double t) {
+  return {lerp(x.r, y.r, t), lerp(x.g, y.g, t), lerp(x.b, y.b, t)};
+}
+
 template <typename F>
-__device__ void escape_time_pixel(Complex c, F f, int max_iters, uint8_t *rgb,
-                                  int n) {
-  // Perform Mandelbrot iterations
+__device__ Color escape_time_pixel(Complex c, F f, int max_iters) {
   int iter;
   Complex z = 0;
 
@@ -19,16 +25,14 @@ __device__ void escape_time_pixel(Complex c, F f, int max_iters, uint8_t *rgb,
     }
   }
 
+  // double nu = log2(log2(abs(z)));
+  // Color color = color_lerp(color1, color2, fmodf(iter + 1 - nu, 1));
+
   // Convert iteration number to HSL
-  // TODO
+  double h =
+      fmodf(powf((static_cast<double>(iter) / max_iters) * 360, 1.5), 360);
 
-  // Convert HSL to RGB
-  // TODO
-
-  // Write RGB values to memory
-  rgb[3 * n + 0] = 255 * (1 - static_cast<double>(iter) / max_iters);
-  rgb[3 * n + 1] = 255 * (1 - static_cast<double>(iter) / max_iters);
-  rgb[3 * n + 2] = 255;
+  return hsl_to_rgb(h / 360.0, 0.5, 0.5);
 }
 
 template <typename F>
@@ -46,8 +50,11 @@ __global__ void escape_time_kernel(F f, int N, int width, double min_re,
     // Convert indices to complex number
     Complex z(min_re + col * step_size, max_im - row * step_size);
 
-    // Convert the value to rgb and store it in memory
-    escape_time_pixel(z, f, max_iters, rgb, n);
+    // Map z to a color and store it in memory
+    Color color = escape_time_pixel(z, f, max_iters);
+    rgb[3 * n + 0] = color.r;
+    rgb[3 * n + 1] = color.g;
+    rgb[3 * n + 2] = color.b;
   }
 }
 
