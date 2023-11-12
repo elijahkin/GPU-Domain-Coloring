@@ -6,12 +6,12 @@ int main() {
   Complex i(0, 1);
 
   auto mandelbrot = [] __device__(Complex z, Complex c) { return z * z + c; };
-  escape_time("mandelbrot", mandelbrot, -0.7, 1.6, 8192, 6144, 200);
+  escape_time("mandelbrot", mandelbrot, -0.7, 1.6, 4096, 3072, 200);
   escape_time("mandelbrot2", mandelbrot,
-              0.001643721971153 - i * 0.822467633298876, 0.00000000002, 2048,
-              2048, 2000);
+              0.001643721971153 - i * 0.822467633298876, 0.00000000002, 4096,
+              3072, 1600);
   escape_time("misiurewicz", mandelbrot, -0.77568377 + i * 0.13646737,
-              0.0000001, 2048, 2048, 500);
+              0.0000001, 4096, 3072, 1000);
 
   auto burning_ship = [i] __device__(Complex z, Complex c) {
     return pow(abs(z.real()) + i * abs(z.imag()), 2) + c;

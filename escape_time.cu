@@ -25,14 +25,22 @@ __device__ Color escape_time_pixel(Complex c, F f, int max_iters) {
     }
   }
 
-  // double nu = log2(log2(abs(z)));
-  // Color color = color_lerp(color1, color2, fmodf(iter + 1 - nu, 1));
+  double nu = log2(log2(abs(z)));
 
-  // Convert iteration number to HSL
-  double h =
-      fmodf(powf((static_cast<double>(iter) / max_iters) * 360, 1.5), 360);
+  Color color1 = hsl_to_rgb(
+      fmodf(pow((static_cast<double>((int)(iter + 1 - nu)) / max_iters) * 360,
+                1.5),
+            360) /
+          360.0,
+      0.5, 0.5);
+  Color color2 = hsl_to_rgb(
+      fmodf(pow((static_cast<double>((int)(iter + 2 - nu)) / max_iters) * 360,
+                1.5),
+            360) /
+          360.0,
+      0.5, 0.5);
 
-  return hsl_to_rgb(h / 360.0, 0.5, 0.5);
+  return color_lerp(color1, color2, fmodf(iter + 1 - nu, 1));
 }
 
 template <typename F>
