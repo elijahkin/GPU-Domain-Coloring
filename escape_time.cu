@@ -3,6 +3,13 @@
 #include "utils.cu"
 #endif
 
+__device__ Color iter_to_color(int iter, int max_iters) {
+  double h =
+      fmodf(pow((static_cast<double>(iter) / max_iters) * 360, 1.5), 360) /
+      360.0;
+  return hsl_to_rgb(h, 0.5, 0.5);
+}
+
 __device__ uint8_t lerp(uint8_t a, uint8_t b, double t) {
   return static_cast<uint8_t>(a + t * (b - a));
 }
@@ -25,22 +32,12 @@ __device__ Color escape_time_pixel(Complex c, F f, int max_iters) {
     }
   }
 
-  double nu = log2(log2(abs(z)));
+  double smooth_iter = iter + 1 - log2(log2(abs(z)));
 
-  Color color1 = hsl_to_rgb(
-      fmodf(pow((static_cast<double>((int)(iter + 1 - nu)) / max_iters) * 360,
-                1.5),
-            360) /
-          360.0,
-      0.5, 0.5);
-  Color color2 = hsl_to_rgb(
-      fmodf(pow((static_cast<double>((int)(iter + 2 - nu)) / max_iters) * 360,
-                1.5),
-            360) /
-          360.0,
-      0.5, 0.5);
+  Color color1 = iter_to_color((int)(smooth_iter), max_iters);
+  Color color2 = iter_to_color((int)(smooth_iter + 1), max_iters);
 
-  return color_lerp(color1, color2, fmodf(iter + 1 - nu, 1));
+  return color_lerp(color1, color2, fmodf(smooth_iter, 1));
 }
 
 template <typename F>

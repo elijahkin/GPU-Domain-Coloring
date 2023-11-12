@@ -1,6 +1,8 @@
 ## Overview
 This repository contains code written for my thesis project at the University of Virginia, for which I am developing a library for plotting fractals and functions of a complex variable using NVIDIA graphics cards.
 
+For reading and writing images, we use the `.ppm` format, examples of which can be found [here](https://en.wikipedia.org/wiki/Netpbm). We chose this format because it is simple enough to make a reader/writer from scratch, and can be easily converted to more standard formats such as `.jpg` and `.png` via ImageMagick. The downside of this format is that file sizes tend to be large.
+
 ## Domain Coloring
 Given a complex number $z$, the function we use produces a color in the $HSL$ color model given by
 ```math
@@ -9,26 +11,28 @@ Given a complex number $z$, the function we use produces a color in the $HSL$ co
 which we then convert to the $RGB$ model using the procedure detailed by
 [Saravanan, Yamuna, and Nandhini](https://ieeexplore.ieee.org/abstract/document/7754179).
 
+### Phase Portraits
+Phase portraiture is a technique much like domain coloring, except that
+
 ## Conformal Mapping
 [Mercat](https://en.wikibooks.org/wiki/Fractals/Conformal_map)
 
 ## Escape-Time Fractals
 
-
 ### Normalization
 In order to avoid color banding,
 
 ## To-Do List
--1. Get original patterns and convert to .ppm
-0. Finish copying over examples and delete remaining old code
-1. Unify domain color and conformal map code as much as possible
-2. Reduce file count and move code into src folder
-3. Implement plotting for Mandelbrot / escape-time fractals
-4. Command line progress bar?
-5. Design a way to profile performance
-6. Write CPU version and compare performance
+* Finish copying over examples and delete Python versions
+* Unify domain color and conformal map code as much as possible, update file structure
+* Command line progress bar?
+* Write CPU version and compare performance
+* Phase portraits
+* Reading from .csv file on website
+* Update renders on website and write descriptions
+* Long term: OpenGL
 
-### Resources
+## Resources
 
 * https://fredrikj.net/blog/2022/02/computing-the-lerch-transcendent/
 
