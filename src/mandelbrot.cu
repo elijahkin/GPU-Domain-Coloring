@@ -1,16 +1,17 @@
 #include <iostream>
 #include <png.h>
+#include <chrono>
 
 // TODO Eventually some of these should be command line args
 
 // Configure dimensions of output image
-const int kWidth = 8192;
-const int kHeight = 6144;
+const int kWidth = 2560;
+const int kHeight = 1440;
 
 // Configure subset of the complex plane to graph
 const double center_re = -0.7;
 const double center_im = 0;
-const double apothem_re = 1.6;
+const double apothem_re = 2;
 
 // Compute derived constant
 const double apothem_im = (apothem_re * kHeight) / kWidth;
@@ -88,14 +89,18 @@ int main() {
   cudaMallocManaged(&rgb, N * 3 * sizeof(uint8_t));
 
   // These blocks and thread numbers were chosen for my RTX 3060
+  auto start = std::chrono::high_resolution_clock::now();
   mandelbrot_cuda<<<28, 128>>>(N, rgb);
 
   // Wait for all threads to finish
   cudaDeviceSynchronize();
+  auto stop = std::chrono::high_resolution_clock::now();
+  auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop - start);
+  std::cout << duration.count() << std::endl;
 
   // Save image
   char filename[100];
-  sprintf(filename, "renders/mandelbrot_%i_%i.png", kWidth, kHeight);
+  sprintf(filename, "mandelbrot_%i_%i.png", kWidth, kHeight);
   save_png(rgb, filename);
 
   // Deallocate memory

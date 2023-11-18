@@ -1,3 +1,5 @@
+#include <cstdint>
+
 struct Color {
   uint8_t r;
   uint8_t g;
@@ -48,4 +50,12 @@ __device__ Color hsl_to_rgb(double h, double s, double l) {
   }
   return {(uint8_t)((r + m) * 255), (uint8_t)((g + m) * 255),
           (uint8_t)((b + m) * 255)};
+}
+
+__device__ uint8_t lerp(uint8_t a, uint8_t b, double t) {
+  return static_cast<uint8_t>(a + t * (b - a));
+}
+
+__device__ Color color_lerp(Color x, Color y, double t) {
+  return {lerp(x.r, y.r, t), lerp(x.g, y.g, t), lerp(x.b, y.b, t)};
 }

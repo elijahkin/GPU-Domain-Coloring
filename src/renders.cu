@@ -1,6 +1,4 @@
-#include "conformal_map.cu"
-#include "domain_color.cu"
-#include "escape_time.cu"
+#include "complex_plot.cu"
 
 int main() {
   Complex i(0, 1);
