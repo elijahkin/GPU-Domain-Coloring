@@ -1,5 +1,5 @@
 CC = nvcc
-CFLAGS = -lpng --extended-lambda
+CFLAGS = --extended-lambda
 
 all: complex_plot
 

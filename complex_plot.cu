@@ -11,7 +11,7 @@ int main() {
               0.001643721971153 - i * 0.822467633298876, 0.00000000002, 4096,
               3072, 1600);
   escape_time("misiurewicz", mandelbrot, -0.77568377 + i * 0.13646737,
-              0.0000001, 4096, 3072, 1000);
+              0.0000001, 2048, 2048, 1000);
 
   auto burning_ship = [i] __device__(Complex z, Complex c) {
     return pow(abs(z.real()) + i * abs(z.imag()), 2) + c;
@@ -127,13 +127,13 @@ int main() {
   domain_color("tetration", tetration, 0, 3, 2048, 2048);
 
   // https://en.wikipedia.org/wiki/Newton_fractal
-  auto newton1 = [] __device__(Complex z) {
+  auto cmyk = [] __device__(Complex z) {
     for (int n = 0; n < 8; n++) {
       z -= (pow(z, 3) - 1) / (3 * pow(z, 2));
     }
     return z;
   };
-  domain_color("newton1", newton1, 0, 2, 2048, 2048);
+  domain_color("cmyk", cmyk, 0, 2, 2048, 2048);
 
   auto newton2 = [] __device__(Complex z) {
     for (int n = 0; n < 8; n++) {
@@ -271,6 +271,7 @@ int main() {
     return z;
   };
   domain_color("needle", needle, 0, 2, 2048, 2048);
+  domain_color("natasha", needle, 0, 3, 4096, 3072);
 
   auto tron = [i] __device__(Complex z) {
     for (int n = 0; n < 64; n++) {
@@ -305,14 +306,13 @@ int main() {
   };
   domain_color("i_of_storm", i_of_storm, 0, 2, 2048, 2048);
 
-  auto pink_and_green_slime = [i] __device__(Complex z) {
+  auto ooze = [i] __device__(Complex z) {
     for (int n = 0; n < 32; n++) {
       z = tan(1 / z) * exp(i * abs(z));
     }
     return z;
   };
-  domain_color("pink_and_green_slime", pink_and_green_slime, 0, 2.5, 2048,
-               2048);
+  domain_color("ooze", ooze, 0, 2.5, 2048, 2048);
 
   auto kaleidoscope = [] __device__(Complex z) {
     for (int n = 0; n < 16; n++) {
