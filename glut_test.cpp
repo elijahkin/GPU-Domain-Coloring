@@ -1,5 +1,8 @@
 #include <GL/glut.h>
 
+// Compile this with the command:
+// g++ -o glut_test glut_test.cpp -lGL -lglut
+
 float zoomFactor = 1.0;
 
 void display() {
@@ -27,15 +30,16 @@ void keyboard(unsigned char key, int x, int y) {
   case 27: // Escape key
     exit(0);
     break;
-  case 'w':
-    zoomFactor *= 1.1;
-    glutPostRedisplay();
-    break;
-  case 's':
-    zoomFactor *= 0.9;
-    glutPostRedisplay();
-    break;
   }
+}
+
+void mouse(int button, int state, int x, int y) {
+  if (button == 3) { // Scroll up
+    zoomFactor *= 1.1;
+  } else if (button == 4) { // Scroll down
+    zoomFactor *= 0.9;
+  }
+  glutPostRedisplay();
 }
 
 int main(int argc, char **argv) {
@@ -52,7 +56,7 @@ int main(int argc, char **argv) {
   // Set up the callback functions
   glutDisplayFunc(display);
   glutKeyboardFunc(keyboard);
-  // glutMouseWheelFunc(mouseWheel);
+  glutMouseFunc(mouse);
 
   // Enter the GLUT event processing loop
   glutMainLoop();
