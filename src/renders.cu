@@ -408,5 +408,38 @@ int main() {
   };
   domain_color("under_construction", under_construction, 0, 2, 2048, 2048);
 
+  // squares
+  auto new1 = [] __device__(Complex z) {
+    Complex w = 0;
+    for (int n = 0; n < 32; n++) {
+      w += n * n * pow(z, n);
+    }
+    return w;
+  };
+  domain_color("new1", new1, 0, 2, 2048, 2048);
+
+  // oscillatory
+  auto new2 = [] __device__(Complex z) {
+    Complex w = 0;
+    for (int n = 1; n < 32; n++) {
+      w += pow(-1, n + 1) / n * pow(z, n);
+    }
+    return w;
+  };
+  domain_color("new2", new2, 0, 2, 2048, 2048);
+
+  // lambdas
+  auto new3 = [] __device__(Complex z) {
+    Complex w = 0;
+    for (int n = 0; n < 32; n++) {
+      w += pow(2, -n) * pow(z, n);
+    }
+    return w;
+  };
+  domain_color("new3", new3, 0, 3, 2048, 2048);
+
+  // engineering is beautiful
+  domain_color("new4", essential_singularity, 0, 0.5, 3072, 2048);
+
   return 0;
 }
