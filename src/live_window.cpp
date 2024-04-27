@@ -2,6 +2,7 @@
 #include <cmath>
 
 // Global variables
+int screenWidth, screenHeight;
 float zoomFactor = 1.0;
 int lastMouseX, lastMouseY;
 bool mouseLeftDown = false;
@@ -29,8 +30,8 @@ void motion(int x, int y) {
     int deltaY = y - lastMouseY;
 
     // Update the center of the view based on mouse movement
-    float translateX = 2 * static_cast<float>(deltaX) / 2560;
-    float translateY = -2 * static_cast<float>(deltaY) / 1440;
+    float translateX = 2 * static_cast<float>(deltaX) / screenWidth;
+    float translateY = -2 * static_cast<float>(deltaY) / screenHeight;
 
     glTranslatef(translateX, translateY, 0.0f);
 
@@ -81,8 +82,8 @@ int main(int argc, char **argv) {
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
   // Get screen size
-  int screenWidth = glutGet(GLUT_SCREEN_WIDTH);
-  int screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
+  screenWidth = glutGet(GLUT_SCREEN_WIDTH);
+  screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
 
   // Set up window size and name
   glutInitWindowSize(screenWidth, screenHeight);
