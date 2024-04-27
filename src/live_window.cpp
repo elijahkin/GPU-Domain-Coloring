@@ -47,6 +47,10 @@ void keyboard(unsigned char key, int x, int y) {
   case 27: // Escape key
     exit(0);
     break;
+  case 32: // Space
+    zoomFactor = 1.0;
+    glLoadIdentity();
+    glutPostRedisplay();
   }
 }
 
