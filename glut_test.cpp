@@ -1,4 +1,5 @@
 #include <GL/glut.h>
+#include <cmath>
 
 // Global variables
 float zoomFactor = 1.0;
@@ -53,8 +54,11 @@ void display() {
   // Clear the color buffer
   glClear(GL_COLOR_BUFFER_BIT);
 
-  // Draw a red square
-  glColor3f(1.0, 0.0, 0.0);
+  // Set color of rectangle based on zoomFactor
+  float r = (1.0f + sin(zoomFactor)) / 2.0f;
+  float g = (1.0f + sin(zoomFactor + 2.0f)) / 2.0f;
+  float b = (1.0f + sin(zoomFactor + 4.0f)) / 2.0f;
+  glColor3f(r, g, b);
   glBegin(GL_POLYGON);
 
   double scale = 0.5 * zoomFactor;
