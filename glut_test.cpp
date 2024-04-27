@@ -7,6 +7,23 @@
 
 float zoomFactor = 1.0;
 
+void mouse(int button, int state, int x, int y) {
+  if (button == 3) { // Scroll up
+    zoomFactor *= 1.1;
+  } else if (button == 4) { // Scroll down
+    zoomFactor *= 0.9;
+  }
+  glutPostRedisplay();
+}
+
+void keyboard(unsigned char key, int x, int y) {
+  switch (key) {
+  case 27: // Escape key
+    exit(0);
+    break;
+  }
+}
+
 void display() {
   // Clear the color buffer
   glClear(GL_COLOR_BUFFER_BIT);
@@ -25,23 +42,6 @@ void display() {
 
   // Swap the front and back buffers
   glutSwapBuffers();
-}
-
-void keyboard(unsigned char key, int x, int y) {
-  switch (key) {
-  case 27: // Escape key
-    exit(0);
-    break;
-  }
-}
-
-void mouse(int button, int state, int x, int y) {
-  if (button == 3) { // Scroll up
-    zoomFactor *= 1.1;
-  } else if (button == 4) { // Scroll down
-    zoomFactor *= 0.9;
-  }
-  glutPostRedisplay();
 }
 
 int main(int argc, char **argv) {
