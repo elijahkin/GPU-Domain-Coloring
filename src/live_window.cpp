@@ -1,5 +1,4 @@
 #include <GL/glut.h>
-#include <cmath>
 
 // Global variables
 int screenWidth, screenHeight;
@@ -55,18 +54,16 @@ void display() {
   // Clear the color buffer
   glClear(GL_COLOR_BUFFER_BIT);
 
-  // Set color of rectangle based on zoomFactor
-  float r = (1.0f + sin(zoomFactor)) / 2.0f;
-  float g = (1.0f + sin(zoomFactor + 2.0f)) / 2.0f;
-  float b = (1.0f + sin(zoomFactor + 4.0f)) / 2.0f;
-  glColor3f(r, g, b);
+  // Draw rectangle
+  double scale = zoomFactor;
   glBegin(GL_POLYGON);
-
-  double scale = 0.5 * zoomFactor;
-
+  glColor3f(0, 0, 0);
   glVertex2f(-scale, -scale);
+  glColor3f(0, 1, 1);
   glVertex2f(scale, -scale);
+  glColor3f(1, 0, 1);
   glVertex2f(scale, scale);
+  glColor3f(1, 1, 0);
   glVertex2f(-scale, scale);
   glEnd();
 
