@@ -1,6 +1,8 @@
 #include <GL/glut.h>
 
-// Compile this with the command:
+// Make sure you have GL:
+// sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
+// Then compile with the command:
 // g++ -o glut_test glut_test.cpp -lGL -lglut
 
 float zoomFactor = 1.0;
@@ -49,9 +51,16 @@ int main(int argc, char **argv) {
   // Set display mode
   glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB);
 
+  // Get screen size
+  int screenWidth = glutGet(GLUT_SCREEN_WIDTH);
+  int screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
+
   // Set up window size and name
-  glutInitWindowSize(600, 400);
+  glutInitWindowSize(screenWidth, screenHeight);
   glutCreateWindow("Functiongram");
+
+  // Set fullscreen
+  glutFullScreen();
 
   // Set up the callback functions
   glutDisplayFunc(display);
