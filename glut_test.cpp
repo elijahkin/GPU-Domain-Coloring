@@ -1,19 +1,44 @@
 #include <GL/glut.h>
 
-// Make sure you have GL:
-// sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev
-// Then compile with the command:
-// g++ -o glut_test glut_test.cpp -lGL -lglut
-
+// Global variables
 float zoomFactor = 1.0;
+int lastMouseX, lastMouseY;
+bool mouseLeftDown = false;
 
 void mouse(int button, int state, int x, int y) {
-  if (button == 3) { // Scroll up
+  if (button == GLUT_LEFT_BUTTON) {
+    if (state == GLUT_DOWN) {
+      mouseLeftDown = true;
+      lastMouseX = x;
+      lastMouseY = y;
+    } else if (state == GLUT_UP) {
+      mouseLeftDown = false;
+    }
+  } else if (button == 3) { // Scroll up
     zoomFactor *= 1.1;
   } else if (button == 4) { // Scroll down
     zoomFactor *= 0.9;
   }
   glutPostRedisplay();
+}
+
+void motion(int x, int y) {
+  if (mouseLeftDown) {
+    int deltaX = x - lastMouseX;
+    int deltaY = y - lastMouseY;
+
+    // Update the center of the view based on mouse movement
+    float translateX = 2 * static_cast<float>(deltaX) / 2560;
+    float translateY = -2 * static_cast<float>(deltaY) / 1440;
+
+    glTranslatef(translateX, translateY, 0.0f);
+
+    // Update the last mouse position to the current position
+    lastMouseX = x;
+    lastMouseY = y;
+
+    glutPostRedisplay();
+  }
 }
 
 void keyboard(unsigned char key, int x, int y) {
@@ -66,6 +91,7 @@ int main(int argc, char **argv) {
   glutDisplayFunc(display);
   glutKeyboardFunc(keyboard);
   glutMouseFunc(mouse);
+  glutMotionFunc(motion);
 
   // Enter the GLUT event processing loop
   glutMainLoop();
