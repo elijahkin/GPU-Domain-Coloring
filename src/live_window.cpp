@@ -1,10 +1,12 @@
 #include <GL/glut.h>
+#include <SOIL/SOIL.h>
 
 // Global variables
 int screenWidth, screenHeight;
 float zoomFactor = 1.0;
 int lastMouseX, lastMouseY;
 bool mouseLeftDown = false;
+GLuint textureID;
 
 void mouse(int button, int state, int x, int y) {
   if (button == GLUT_LEFT_BUTTON) {
@@ -58,18 +60,29 @@ void display() {
   // Clear the color buffer
   glClear(GL_COLOR_BUFFER_BIT);
 
-  // Draw rectangle
+  // Load and bind texture
+  GLuint textureID = SOIL_load_OGL_texture(
+      "sample.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
+  glBindTexture(GL_TEXTURE_2D, textureID);
+
+  // Enable texture coordinate handling
+  glEnable(GL_TEXTURE_2D);
+
+  // Draw rectangle with texture mapping
   double scale = zoomFactor;
   glBegin(GL_POLYGON);
-  glColor3f(0, 0, 0);
+  glTexCoord2f(0.0f, 0.0f);
   glVertex2f(-scale, -scale);
-  glColor3f(0, 1, 1);
+  glTexCoord2f(1.0f, 0.0f);
   glVertex2f(scale, -scale);
-  glColor3f(1, 0, 1);
+  glTexCoord2f(1.0f, 1.0f);
   glVertex2f(scale, scale);
-  glColor3f(1, 1, 0);
+  glTexCoord2f(0.0f, 1.0f);
   glVertex2f(-scale, scale);
   glEnd();
+
+  // Disable texture coordinate handling
+  glDisable(GL_TEXTURE_2D);
 
   // Swap the front and back buffers
   glutSwapBuffers();
