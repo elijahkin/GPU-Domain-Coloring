@@ -63,11 +63,24 @@ void keyboard(unsigned char key, int x, int y) {
 void display() {
   // Use CUDA kernel to render function
   float min_re = center_re - apothem_re;
+  float max_re = center_re + apothem_re;
   float apothem_im = screenHeight * apothem_re / screenWidth;
   float max_im = center_im + apothem_im;
+  float min_im = center_im - apothem_im;
   float step_size = 2 * apothem_re / (screenWidth - 1);
-  domain_color_kernel<<<28, 128>>>([] __device__(Complex z) { return z; },
-                                   render, min_re, max_im, step_size);
+
+  domain_color_kernel<<<28, 128>>>(
+      [] __device__(Complex z) { return pow(z, 3) - 1; }, render, min_re,
+      max_im, step_size);
+
+  // Image pattern = read_ppm("patterns/cannon.ppm");
+  // conformal_map_kernel<<<28, 128>>>(
+  //     [] __device__(Complex z) { return pow(z, -2); }, render, min_re, max_re,
+  //     min_im, max_im, step_size, pattern);
+
+  // escape_time_kernel<<<28, 128>>>(
+  //     [] __device__(Complex z, Complex c) { return pow(z, 7) + c; }, render,
+  //     min_re, max_im, step_size, 10);
   cudaDeviceSynchronize();
 
   // Update OpenGL texture with CUDA output
@@ -80,7 +93,7 @@ void display() {
   glEnable(GL_TEXTURE_2D);
 
   // Draw textured rectangle
-  glBegin(GL_POLYGON);
+  glBegin(GL_QUADS);
   glTexCoord2f(0.0f, 0.0f);
   glVertex2f(-1.0f, -1.0f);
   glTexCoord2f(1.0f, 0.0f);
