@@ -2,12 +2,16 @@
 #include <GL/glut.h>
 
 // Global variables
+float center_re = 0.0;
+float center_im = 0.0;
+float apothem_re = 1.0;
+
 int screenWidth, screenHeight;
-float zoomFactor = 1.0;
 int lastMouseX, lastMouseY;
 bool mouseLeftDown = false;
 uint8_t *rgb;
 Image render;
+GLuint textureID;
 
 void mouse(int button, int state, int x, int y) {
   if (button == GLUT_LEFT_BUTTON) {
@@ -19,9 +23,9 @@ void mouse(int button, int state, int x, int y) {
       mouseLeftDown = false;
     }
   } else if (button == 3) { // Scroll up
-    zoomFactor *= 1.1;
+    apothem_re *= 1.1;
   } else if (button == 4) { // Scroll down
-    zoomFactor *= 0.9;
+    apothem_re *= 0.9;
   }
   glutPostRedisplay();
 }
@@ -31,11 +35,8 @@ void motion(int x, int y) {
     int deltaX = x - lastMouseX;
     int deltaY = y - lastMouseY;
 
-    // Update the center of the view based on mouse movement
-    float translateX = 2 * static_cast<float>(deltaX) / screenWidth;
-    float translateY = -2 * static_cast<float>(deltaY) / screenHeight;
-
-    glTranslatef(translateX, translateY, 0.0f);
+    center_re -= 2 * deltaX * apothem_re / screenWidth;
+    center_im -= 2 * deltaY * apothem_re / screenWidth;
 
     // Update the last mouse position to the current position
     lastMouseX = x;
@@ -52,36 +53,46 @@ void keyboard(unsigned char key, int x, int y) {
     exit(0);
     break;
   case 32: // Space
-    zoomFactor = 1.0;
-    glLoadIdentity();
+    center_re = 0.0;
+    center_im = 0.0;
+    apothem_re = 1.0;
     glutPostRedisplay();
   }
 }
 
 void display() {
-  // Clear the color buffer
-  glClear(GL_COLOR_BUFFER_BIT);
+  // Use CUDA kernel to render function
+  float min_re = center_re - apothem_re;
+  float apothem_im = screenHeight * apothem_re / screenWidth;
+  float max_im = center_im + apothem_im;
+  float step_size = 2 * apothem_re / (screenWidth - 1);
+  domain_color_kernel<<<28, 128>>>([] __device__(Complex z) { return z; },
+                                   render, min_re, max_im, step_size);
+  cudaDeviceSynchronize();
 
-  // Enable texture coordinate handling
+  // Update OpenGL texture with CUDA output
+  glBindTexture(GL_TEXTURE_2D, textureID);
+  glTexSubImage2D(GL_TEXTURE_2D, 0, 0, 0, render.width, render.height, GL_RGB,
+                  GL_UNSIGNED_BYTE, render.rgb);
+
+  // Clear the color buffer and set up for rendering
+  glClear(GL_COLOR_BUFFER_BIT);
   glEnable(GL_TEXTURE_2D);
 
-  // Draw rectangle with texture mapping
-  double scale = zoomFactor;
+  // Draw textured rectangle
   glBegin(GL_POLYGON);
   glTexCoord2f(0.0f, 0.0f);
-  glVertex2f(-scale, -scale);
+  glVertex2f(-1.0f, -1.0f);
   glTexCoord2f(1.0f, 0.0f);
-  glVertex2f(scale, -scale);
+  glVertex2f(1.0f, -1.0f);
   glTexCoord2f(1.0f, 1.0f);
-  glVertex2f(scale, scale);
+  glVertex2f(1.0f, 1.0f);
   glTexCoord2f(0.0f, 1.0f);
-  glVertex2f(-scale, scale);
+  glVertex2f(-1.0f, 1.0f);
   glEnd();
 
-  // Disable texture coordinate handling
+  // Disable texture mapping and swap buffers
   glDisable(GL_TEXTURE_2D);
-
-  // Swap the front and back buffers
   glutSwapBuffers();
 }
 
@@ -98,12 +109,7 @@ int main(int argc, char **argv) {
 
   // Allocate CUDA memory
   cudaMallocManaged(&rgb, screenWidth * screenHeight * 3 * sizeof(uint8_t));
-  Image render = {screenWidth, screenHeight, screenWidth * screenHeight, rgb};
-
-  // Rerender TODO move this into display
-  domain_color_kernel<<<28, 128>>>([] __device__(Complex z) { return z; },
-                                   render, -1, 1, 0.001);
-  cudaDeviceSynchronize();
+  render = {screenWidth, screenHeight, screenWidth * screenHeight, rgb};
 
   // Set up window size and name
   glutInitWindowSize(screenWidth, screenHeight);
@@ -114,11 +120,6 @@ int main(int argc, char **argv) {
 
   // Set up OpenGL for texture mapping
   glEnable(GL_TEXTURE_2D);
-
-  // Generate a new texture object
-  GLuint textureID;
-  glGenTextures(1, &textureID);
-  glBindTexture(GL_TEXTURE_2D, textureID);
 
   // Set texture parameters
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
