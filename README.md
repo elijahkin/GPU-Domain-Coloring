@@ -43,3 +43,7 @@ In order to avoid color banding,
 * https://www.ams.org/notices/201106/rtx110600768p.pdf
 
 * https://apps.dtic.mil/sti/tr/pdf/ADA210016.pdf
+
+### Window
+* `sudo apt-get install libglu1-mesa-dev freeglut3-dev mesa-common-dev`
+* `nvcc -o bin/window src/window.cu -lGL -lglut --extended-lambda`

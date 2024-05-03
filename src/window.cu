@@ -1,12 +1,13 @@
+#include "complex_plot.cu"
 #include <GL/glut.h>
-#include <SOIL/SOIL.h>
 
 // Global variables
 int screenWidth, screenHeight;
 float zoomFactor = 1.0;
 int lastMouseX, lastMouseY;
 bool mouseLeftDown = false;
-GLuint textureID;
+uint8_t *rgb;
+Image render;
 
 void mouse(int button, int state, int x, int y) {
   if (button == GLUT_LEFT_BUTTON) {
@@ -47,6 +48,7 @@ void motion(int x, int y) {
 void keyboard(unsigned char key, int x, int y) {
   switch (key) {
   case 27: // Escape key
+    cudaFree(rgb);
     exit(0);
     break;
   case 32: // Space
@@ -59,11 +61,6 @@ void keyboard(unsigned char key, int x, int y) {
 void display() {
   // Clear the color buffer
   glClear(GL_COLOR_BUFFER_BIT);
-
-  // Load and bind texture
-  GLuint textureID = SOIL_load_OGL_texture(
-      "sample.jpg", SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
-  glBindTexture(GL_TEXTURE_2D, textureID);
 
   // Enable texture coordinate handling
   glEnable(GL_TEXTURE_2D);
@@ -99,12 +96,39 @@ int main(int argc, char **argv) {
   screenWidth = glutGet(GLUT_SCREEN_WIDTH);
   screenHeight = glutGet(GLUT_SCREEN_HEIGHT);
 
+  // Allocate CUDA memory
+  cudaMallocManaged(&rgb, screenWidth * screenHeight * 3 * sizeof(uint8_t));
+  Image render = {screenWidth, screenHeight, screenWidth * screenHeight, rgb};
+
+  // Rerender TODO move this into display
+  domain_color_kernel<<<28, 128>>>([] __device__(Complex z) { return z; },
+                                   render, -1, 1, 0.001);
+  cudaDeviceSynchronize();
+
   // Set up window size and name
   glutInitWindowSize(screenWidth, screenHeight);
   glutCreateWindow("Functiongram");
 
   // Set fullscreen
   glutFullScreen();
+
+  // Set up OpenGL for texture mapping
+  glEnable(GL_TEXTURE_2D);
+
+  // Generate a new texture object
+  GLuint textureID;
+  glGenTextures(1, &textureID);
+  glBindTexture(GL_TEXTURE_2D, textureID);
+
+  // Set texture parameters
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+
+  // Specify texture image data
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, screenWidth, screenHeight, 0, GL_RGB,
+               GL_UNSIGNED_BYTE, rgb);
 
   // Set up the callback functions
   glutDisplayFunc(display);
