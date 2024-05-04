@@ -1,10 +1,14 @@
 #include "complex_plot.cu"
 #include <GL/glut.h>
 
+const float home_center_id = 0.0;
+const float home_center_im = 0.0;
+const float home_apothem_re = 3.0;
+
 // Global variables
-float center_re = 0.0;
-float center_im = 0.0;
-float apothem_re = 1.0;
+float center_re = home_center_id;
+float center_im = home_center_im;
+float apothem_re = home_apothem_re;
 
 uint8_t *rgb;
 Image render;
@@ -55,16 +59,15 @@ void keyboard(unsigned char key, int x, int y) {
     exit(0);
     break;
   case 32: // Space
-    center_re = 0.0;
-    center_im = 0.0;
-    apothem_re = 1.0;
-    glutPostRedisplay();
+    center_re = home_center_id;
+    center_im = home_center_im;
+    apothem_re = home_apothem_re;
     break;
   case 96: // `
     displayInfo = !displayInfo;
-    glutPostRedisplay();
     break;
   }
+  glutPostRedisplay();
 }
 
 void drawString(float x, float y, float z, std::string &text) {
@@ -92,9 +95,7 @@ void drawString(float x, float y, float z, std::string &text) {
 
 // Create info string to display if displayInfo is true
 std::string getInfoString() {
-  return "Mouse X: " + std::to_string(lastMouseX) +
-         "\nMouse Y: " + std::to_string(lastMouseY) +
-         "\nCenter X: " + std::to_string(center_re) +
+  return "Center X: " + std::to_string(center_re) +
          "\nCenter Y: " + std::to_string(center_im) +
          "\nApothem: " + std::to_string(apothem_re);
 }
