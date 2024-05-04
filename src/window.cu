@@ -38,7 +38,7 @@ void motion(int x, int y) {
     int deltaY = y - lastMouseY;
 
     center_re -= 2 * deltaX * apothem_re / screenWidth;
-    center_im -= 2 * deltaY * apothem_re / screenWidth;
+    center_im += 2 * deltaY * apothem_re / screenWidth;
 
     // Update the last mouse position to the current position
     lastMouseX = x;
@@ -71,7 +71,7 @@ void drawString(float x, float y, float z, std::string &text) {
   // Save the current attributes (including color)
   glPushAttrib(GL_CURRENT_BIT);
 
-  // Set text color to white
+  // Set text color to black
   glColor3f(0.0f, 0.0f, 0.0f);
 
   // Set initial raster position
@@ -100,7 +100,7 @@ std::string getInfoString() {
 }
 
 void display() {
-    // Use CUDA kernel to render function
+  // TODO move these calculations inside kernels
   float min_re = center_re - apothem_re;
   float max_re = center_re + apothem_re;
   float apothem_im = screenHeight * apothem_re / screenWidth;
@@ -108,14 +108,16 @@ void display() {
   float min_im = center_im - apothem_im;
   float step_size = 2 * apothem_re / (screenWidth - 1);
 
+  // Use CUDA kernel to render function
+  // TODO unify the three kernels
   domain_color_kernel<<<28, 128>>>(
       [] __device__(Complex z) { return pow(z, 3) - 1; }, render, min_re,
       max_im, step_size);
 
   // Image pattern = read_ppm("patterns/cannon.ppm");
   // conformal_map_kernel<<<28, 128>>>(
-  //     [] __device__(Complex z) { return pow(z, -2); }, render, min_re, max_re,
-  //     min_im, max_im, step_size, pattern);
+  //     [] __device__(Complex z) { return pow(z, -2); }, render, min_re,
+  //     max_re, min_im, max_im, step_size, pattern);
 
   // escape_time_kernel<<<28, 128>>>(
   //     [] __device__(Complex z, Complex c) { return pow(z, 7) + c; }, render,
@@ -134,13 +136,13 @@ void display() {
   // Draw textured rectangle
   glBegin(GL_QUADS);
   glTexCoord2f(0.0f, 0.0f);
-  glVertex2f(-1.0f, -1.0f);
-  glTexCoord2f(1.0f, 0.0f);
-  glVertex2f(1.0f, -1.0f);
-  glTexCoord2f(1.0f, 1.0f);
-  glVertex2f(1.0f, 1.0f);
-  glTexCoord2f(0.0f, 1.0f);
   glVertex2f(-1.0f, 1.0f);
+  glTexCoord2f(1.0f, 0.0f);
+  glVertex2f(1.0f, 1.0f);
+  glTexCoord2f(1.0f, 1.0f);
+  glVertex2f(1.0f, -1.0f);
+  glTexCoord2f(0.0f, 1.0f);
+  glVertex2f(-1.0f, -1.0f);
   glEnd();
 
   // Disable texture mapping and swap buffers
