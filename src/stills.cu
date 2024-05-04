@@ -1,7 +1,89 @@
-#include "complex_plot.cu"
+#include "kernels.cu"
+
+template <typename F>
+void domain_color(std::string name, F f, Complex center, double apothem_real,
+                  int width, int height) {
+  // Calculate derived constants
+  int N = width * height;
+  double min_real = center.real() - apothem_real;
+  double max_imag = center.imag() + (apothem_real * height) / width;
+  double step_size = 2.0 * apothem_real / (width - 1);
+
+  // Create the image object to write data to
+  uint8_t *rgb;
+  cudaMallocManaged(&rgb, width * height * 3 * sizeof(uint8_t));
+  Image render = {width, height, N, rgb};
+
+  // These blocks and thread numbers were chosen for my RTX 3060
+  domain_color_kernel<<<28, 128>>>(f, render, min_real, max_imag, step_size);
+  cudaDeviceSynchronize();
+
+  // Save the image to a file and clean up memory
+  name = "renders/domain_color_" + name + ".ppm";
+  write_ppm(name, render);
+  cudaFree(rgb);
+}
+
+template <typename F>
+void conformal_map(std::string name, F f, Complex center, double apothem_real,
+                   int width, int height, std::string pattern_name) {
+  // Calculate derived constants
+  int N = width * height;
+  double apothem_imag = (apothem_real * height) / width;
+  double step_size = 2.0 * apothem_real / (width - 1);
+
+  double min_real = center.real() - apothem_real;
+  double max_real = center.real() + apothem_real;
+  double min_imag = center.imag() - apothem_imag;
+  double max_imag = center.imag() + apothem_imag;
+
+  // Read in the pattern
+  Image pattern = read_ppm(pattern_name);
+
+  // Create the image object to write data to
+  uint8_t *rgb;
+  cudaMallocManaged(&rgb, width * height * 3 * sizeof(uint8_t));
+  Image render = {width, height, N, rgb};
+
+  // These blocks and thread numbers were chosen for my RTX 3060
+  conformal_map_kernel<<<28, 128>>>(f, render, min_real, max_real, min_imag,
+                                    max_imag, step_size, pattern);
+  cudaDeviceSynchronize();
+
+  // Save the image to a file and clean up memory
+  name = "renders/conformal_map_" + name + ".ppm";
+  write_ppm(name, render);
+  cudaFree(rgb);
+  cudaFree(pattern.rgb);
+}
+
+template <typename F>
+void escape_time(std::string name, F f, Complex center, double apothem_real,
+                 int width, int height, int max_iters) {
+  // Calculate derived constants
+  int N = width * height;
+  double min_real = center.real() - apothem_real;
+  double max_imag = center.imag() + (apothem_real * height) / width;
+  double step_size = 2.0 * apothem_real / (width - 1);
+
+  // Create the image object to write data to
+  uint8_t *rgb;
+  cudaMallocManaged(&rgb, width * height * 3 * sizeof(uint8_t));
+  Image render = {width, height, N, rgb};
+
+  // These blocks and thread numbers were chosen for my RTX 3060
+  escape_time_kernel<<<28, 128>>>(f, render, min_real, max_imag, step_size,
+                                  max_iters);
+  cudaDeviceSynchronize();
+
+  // Save the image to a file and clean up memory
+  name = "renders/escape_time_" + name + ".ppm";
+  write_ppm(name, render);
+  cudaFree(rgb);
+}
 
 int main() {
-  Complex i(0, 1);
+  const Complex i(0, 1);
 
   auto mandelbrot = [] __device__(Complex z, Complex c) { return z * z + c; };
   escape_time("mandelbrot", mandelbrot, -0.7, 1.6, 4096, 3072, 200);
@@ -411,35 +493,61 @@ int main() {
   // squares
   auto new1 = [] __device__(Complex z) {
     Complex w = 0;
-    for (int n = 0; n < 32; n++) {
+    for (int n = 0; n < 1024; n++) {
       w += n * n * pow(z, n);
     }
     return w;
   };
-  domain_color("new1", new1, 0, 2, 2048, 2048);
+  domain_color("new1", new1, 0, 1, 2048, 2048);
 
   // oscillatory
   auto new2 = [] __device__(Complex z) {
     Complex w = 0;
-    for (int n = 1; n < 32; n++) {
+    for (int n = 1; n < 1024; n++) {
       w += pow(-1, n + 1) / n * pow(z, n);
     }
     return w;
   };
-  domain_color("new2", new2, 0, 2, 2048, 2048);
+  domain_color("new2", new2, 0, 1, 2048, 2048);
 
   // lambdas
   auto new3 = [] __device__(Complex z) {
     Complex w = 0;
-    for (int n = 0; n < 32; n++) {
-      w += pow(2, -n) * pow(z, n);
+    for (int n = 0; n < 1024; n++) {
+      w += pow(z, n);
     }
     return w;
   };
-  domain_color("new3", new3, 0, 3, 2048, 2048);
+  domain_color("new3", new3, 0, 1, 2048, 2048);
 
-  // engineering is beautiful
-  domain_color("new4", essential_singularity, 0, 0.5, 3072, 2048);
+  auto new5 = [] __device__(Complex z) {
+    Complex w = 0;
+    for (int n = 0; n < 1024; n++) {
+      w += pow(z, n * n);
+    }
+    return w;
+  };
+  domain_color("new5", new5, 0, 1, 2048, 2048);
+
+  auto sigmoid = [] __device__(Complex z) { return 1 / (1 + exp(-z)); };
+  domain_color("sigmoid", sigmoid, 0, 10, 2048, 2048);
+
+  auto deep_sea = [] __device__(Complex z) {
+    for (int n = 1; n < 256; n++) {
+      z = log(z * z - z - 1);
+    }
+    return z;
+  };
+  domain_color("deep_sea", deep_sea, 0, 10, 2048, 2048);
+
+  auto butterfly_splotch = [] __device__(Complex z) {
+    Complex w = z;
+    for (int n = 1; n < 256; n++) {
+      w = log(w + 1 / sinh(w));
+    }
+    return w;
+  };
+  domain_color("butterfly_splotch", butterfly_splotch, 0, 10, 2048, 2048);
 
   return 0;
 }

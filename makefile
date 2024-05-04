@@ -1,10 +1,14 @@
 CC = nvcc
 CFLAGS = --extended-lambda
 
-all: complex_plot
+all: stills window
 
-complex_plot: src/renders.cu
-	$(CC) $(CFLAGS) -o bin/complex_plot src/renders.cu
+stills:
+	$(CC) $(CFLAGS) -o bin/stills src/stills.cu
+
+window:
+	$(CC) $(CFLAGS) -o bin/window src/window.cu -lGL -lglut
 
 clean:
-	rm -f bin/complex_plot
+	rm -f bin/stills
+	rm -f bin/window

@@ -1,4 +1,4 @@
-#include "complex_plot.cu"
+#include "kernels.cu"
 #include <GL/glut.h>
 
 const float home_center_id = 0.0;
