@@ -6,12 +6,14 @@ float center_re = 0.0;
 float center_im = 0.0;
 float apothem_re = 1.0;
 
-int screenWidth, screenHeight;
-int lastMouseX, lastMouseY;
-bool mouseLeftDown = false;
 uint8_t *rgb;
 Image render;
 GLuint textureID;
+
+int screenWidth, screenHeight;
+int lastMouseX, lastMouseY;
+bool mouseLeftDown = false;
+bool displayInfo = false;
 
 void mouse(int button, int state, int x, int y) {
   if (button == GLUT_LEFT_BUTTON) {
@@ -57,11 +59,48 @@ void keyboard(unsigned char key, int x, int y) {
     center_im = 0.0;
     apothem_re = 1.0;
     glutPostRedisplay();
+    break;
+  case 96: // `
+    displayInfo = !displayInfo;
+    glutPostRedisplay();
+    break;
   }
 }
 
+void drawString(float x, float y, float z, std::string &text) {
+  // Save the current attributes (including color)
+  glPushAttrib(GL_CURRENT_BIT);
+
+  // Set text color to white
+  glColor3f(0.0f, 0.0f, 0.0f);
+
+  // Set initial raster position
+  glRasterPos3f(x, y, z);
+
+  for (char c : text) {
+    if (c == '\n') {
+      // Move to the next line
+      y -= 0.05f;             // Adjust the line spacing as needed
+      glRasterPos3f(x, y, z); // Set new raster position for the next line
+    } else {
+      // Render the character
+      glutBitmapCharacter(GLUT_BITMAP_9_BY_15, c);
+    }
+  }
+  glPopAttrib();
+}
+
+// Create info string to display if displayInfo is true
+std::string getInfoString() {
+  return "Mouse X: " + std::to_string(lastMouseX) +
+         "\nMouse Y: " + std::to_string(lastMouseY) +
+         "\nCenter X: " + std::to_string(center_re) +
+         "\nCenter Y: " + std::to_string(center_im) +
+         "\nApothem: " + std::to_string(apothem_re);
+}
+
 void display() {
-  // Use CUDA kernel to render function
+    // Use CUDA kernel to render function
   float min_re = center_re - apothem_re;
   float max_re = center_re + apothem_re;
   float apothem_im = screenHeight * apothem_re / screenWidth;
@@ -106,6 +145,13 @@ void display() {
 
   // Disable texture mapping and swap buffers
   glDisable(GL_TEXTURE_2D);
+
+  // Draw info string for debugging
+  if (displayInfo) {
+    std::string info = getInfoString();
+    drawString(-0.98, 0.95, 0.0, info);
+  }
+
   glutSwapBuffers();
 }
 
