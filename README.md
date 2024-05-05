@@ -41,7 +41,6 @@ TODO
 
 ## To-Do List
 High Priority:
-* Fix zooming so it centers around mouse position
 * Move annoying calculations inside the kernels
 * Unify kernels (via optional parameters)
 * Toggleable axes in the window
@@ -63,4 +62,3 @@ Many examples and techniques were drawn from these excellent resources. I highly
 * [Conformal Image Warping](https://apps.dtic.mil/sti/tr/pdf/ADA210016.pdf)
 * [Hans Lundmark's Complex Analysis Pages](https://users.mai.liu.se/hanlu09/complex/)
 * [Domain Coloring of Complex Functions](http://www.javaview.de/domainColoring/)
-* [Computing the Lerch transcendent](https://fredrikj.net/blog/2022/02/computing-the-lerch-transcendent/)

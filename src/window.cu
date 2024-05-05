@@ -3,7 +3,7 @@
 
 const float home_center_id = 0.0;
 const float home_center_im = 0.0;
-const float home_apothem_re = 3.0;
+const float home_apothem_re = 1.0;
 
 // Global variables
 float center_re = home_center_id;
@@ -28,10 +28,12 @@ void mouse(int button, int state, int x, int y) {
     } else if (state == GLUT_UP) {
       mouseLeftDown = false;
     }
-  } else if (button == 3) { // Scroll up
-    apothem_re *= 1.1;
-  } else if (button == 4) { // Scroll down
-    apothem_re *= 0.9;
+  } else if (button == 3 || button == 4) { // Scroll up and down
+    float scalar = (button == 3) ? 1.1 : 0.9;
+    float step_size = 2 * apothem_re / (screenWidth - 1);
+    center_re += (x - screenWidth / 2) * step_size * (1 - scalar);
+    center_im -= (y - screenHeight / 2) * step_size * (1 - scalar);
+    apothem_re *= scalar;
   }
   glutPostRedisplay();
 }
@@ -112,8 +114,8 @@ void display() {
   // Use CUDA kernel to render function
   // TODO unify the three kernels
   domain_color_kernel<<<28, 128>>>(
-      [] __device__(Complex z) { return pow(z, 3) - 1; }, render, min_re,
-      max_im, step_size);
+      [] __device__(Complex z) { return exp(1 / z); }, render, min_re, max_im,
+      step_size);
 
   // Image pattern = read_ppm("patterns/cannon.ppm");
   // conformal_map_kernel<<<28, 128>>>(
